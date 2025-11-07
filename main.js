@@ -1,174 +1,5 @@
 //**********************************************//
 //
-// eStatのインスタンスを生成
-//
-//**********************************************//
-// APIの種類を生成する
-function underbar_case(s){
-	return s.replace(/\.?([A-Z]+)/g, function(x, y){ return "_" + y; }).replace(/^_/, "").toUpperCase();
-}
-// キャピタルにする
-function capitalize(string){
-	return string.charAt(0).toUpperCase() + string.slice(1);
-}
-// url queryの作成
-function build_queries(q){
-	return Object.keys(q).map(function(key){ return key + (q[key] ? "=" + q[key] : "");}).join("&");
-}
-function drawTooltip(d, axis, tooltip){
-	var  _tooltip_html  = '';
-	tooltip.transition()
-		.duration(500)
-		.style("opacity", 0);
-	tooltip.transition()
-		.duration(200)
-		.style("opacity", .9);
-	var tooltip_html = ''
-	tooltip_html += d[axis].name+':'+d.$
-	tooltip_html += d.unit != undefined ? d.unit : '';
-	tooltip.html(tooltip_html)
-	.style("left", (d3.event.pageX) + "px")
-	.style("top", (d3.event.pageY - 5) + "px");
-	tooltip.style("visibility", "visible"); 
-}
-function moveTooltip(d, tooltip){
-	return tooltip.style("top", (event.pageY-20)+"px").style("left",(event.pageX+10)+"px");
-}
-function removeTooltip(d, tooltip){
-	return tooltip.style("visibility", "hidden");
-}
-
-
-var estatAPI = function(o){
-	return new Promise(function(resolve, reject){
-		var url = estatAPI.buildUrl(o);
-		var api = underbar_case(o.api);
-		if(o.userData != undefined)
-		{
-			if(o.api == estatAPI.config.GET_META_INFO)
-			{
-				o.userData.METADATA.GET_META_INFO.PARAMETER.STATS_DATA_ID = null
-				resolve(o.userData.METADATA)
-			}
-			else
-			{
-				resolve(o.userData.STATDATA)
-			}
-		}
-		else
-		{
-			$.getJSON(url).done(function(data){
-				if(data[api].RESULT.STATUS !== 0)
-				{
-					reject({
-						status: data[api].RESULT.STATUS,
-						error_msg: data[api].RESULT.ERROR_MSG
-					});
-					return;
-				}
-				resolve(data);
-			}).fail(function(e){
-				reject(e);
-			});
-		}
-	});
-
-};
-estatAPI.config = {
-	 URL			: "http://api.e-stat.go.jp/rest/2.0/app/json/"
-	,GET_STATS_LIST	:"getStatsList"
-	,GET_META_INFO	: "getMetaInfo"
-	,GET_STATS_DATA	: "getStatsData"
-	,metaGetFlg		: 'N'
-}
-estatAPI.buildUrl = function(o){
-	var q = {
-		appId: o.appId
-	};
-	if (o.api === estatAPI.config.GET_STATS_LIST)
-	{
-		throw new Error('unimplemented');
-	}
-	else if (o.api === estatAPI.config.GET_META_INFO)
-	{
-		q.statsDataId = o.statsDataId;
-	}
-	else if (o.api === estatAPI.config.GET_STATS_DATA)
-	{
-		q.statsDataId = o.statsDataId;
-		q.metaGetFlg = estatAPI.config.metaGetFlg;
-		Object.keys(o.filters).filter(function(key){
-			return key === "time" || key === "area" || /^cat/.test(key);
-		}).forEach(function(key){
-			var params = o.filters[key];
-			if (typeof params === "string")
-			{
-				q["cd" + capitalize(key)] = params;
-				return;
-			}
-			if (params.lv	)
-			{
-				q["lv" + capitalize(key)] = params.lv;
-			}
-			if (params.cd	)
-			{
-				q["cd" + capitalize(key)] = params.cd;
-			}
-			if (params.from	) 
-			{
-				q["cd" + capitalize(key) + "From"] = params.from;
-			}
-			if (params.to	)
-			{
-				q["cd" + capitalize(key) + "To"] = params.to;
-			}
-		});
-	}
-	return estatAPI.config.URL + o.api + "?" + build_queries(q);
-};
-	
-//**********************************************//
-//
-// イベント
-//
-//**********************************************//
-
-function eventer(){ this._events = {}; }
-eventer.prototype = {
-	 on : function(nm, fn) 
-	{
-		if (!(nm in this._events))
-		{
-			this._events[nm] = [];
-		}
-		this._events[nm].push(fn);
-	}
-	,off : function(nm, fn)
-	{
-		if (!(nm in this._events)) return;
-		this._events[nm] = this._events[nm].filter(function(ev){
-			return ev !== fn;
-		});
-	}
-	,emit: function(nm)
-	{
-		if (!(nm in this._events)) return;
-		var len = this._events[nm].length;
-		var args = Array.prototype.slice.call(arguments, 1);
-		for (var i = 0; i < len; i++)
-		{
-			this._events[nm][i].apply(this, args);
-		}
-	}
-	,trigger : function()
-	{
-		return this.emit.apply(this, arguments);
-	}
-
-};
-
-//**********************************************//
-//
 // component
 //
 //**********************************************//
@@ -754,10 +585,11 @@ function Data(){
 	this._busy = false;
 }
 
-Data.CHART_TYPE_BAR_CHART = 0;
-Data.CHART_TYPE_LINE_CHART = 1;
-Data.CHART_TYPE_SCATTER_PLOT = 2;
-Data.CHART_TYPE_MAP = 3;
+// チャートタイプ定数（constants.jsから参照）
+Data.CHART_TYPE_BAR_CHART = CHART_TYPE.BAR_CHART;
+Data.CHART_TYPE_LINE_CHART = CHART_TYPE.LINE_CHART;
+Data.CHART_TYPE_SCATTER_PLOT = CHART_TYPE.SCATTER_PLOT;
+Data.CHART_TYPE_MAP = CHART_TYPE.MAP;
 Data.prototype = Object.create(eventer.prototype, {
 	 busy: {
 		get: function(){
@@ -1017,6 +849,13 @@ function data_panel_view(o){
 
 	function onError(err){
 		console.error(err);
+		var errorMessage = 'データの取得に失敗しました。';
+		if(err && err.error_msg){
+			errorMessage = 'API エラー: ' + err.error_msg;
+		} else if(err && err.message){
+			errorMessage = 'エラー: ' + err.message;
+		}
+		showError(errorMessage);
 	}
 }
 data_panel_view.prototype = Object.create(viewer.prototype, {
@@ -1108,9 +947,8 @@ chart_view.prototype = Object.create(viewer.prototype, {
 			}
 			if (!draw) return;
 			draw(data, this._svg, this._width, this._height);
-			throw false;
 		}
-		
+
 	}
 	// 棒グラフ
 	,bar_chart		: {
@@ -1121,10 +959,10 @@ chart_view.prototype = Object.create(viewer.prototype, {
 
 			var axis = dat.metadata[dat.axis].id;
 			var unit = dat.data[0].unit || "";
-			var dataset = data._selected != undefined ? 
+			var dataset = data._selected != undefined ?
 				$.grep(dat.data, function(x,i){ return data._selected[i] == true;}, false) :
 				dat.data;
-			var margin = { top: 20, right: 20, bottom: 30, left: 100 };
+			var margin = CHART_MARGINS.DEFAULT;
 			var width = w - margin.left - margin.right;
 			var height = h - margin.top - margin.bottom;
 
@@ -1188,11 +1026,11 @@ chart_view.prototype = Object.create(viewer.prototype, {
 
 			var axis = dat.metadata[dat.axis].id;
 			var unit = dat.data[0].unit || "";
-			var dataset = data._selected != undefined ? 
+			var dataset = data._selected != undefined ?
 				$.grep(dat.data, function(x,i){ return data._selected[i] == true;}, false) :
 				dat.data;
 
-			var margin = { top: 20, right: 20, bottom: 30, left: 100 };
+			var margin = CHART_MARGINS.DEFAULT;
 			var width = w - margin.left - margin.right;
 			var height = h - margin.top - margin.bottom;
 
@@ -1281,7 +1119,7 @@ chart_view.prototype = Object.create(viewer.prototype, {
 			,y: dat.y.data[0].unit || ""
 		};
 		var dataset = dat.x.data;
-		var margin = { top: 20, right: 20, bottom: 30, left: 100 };
+		var margin = CHART_MARGINS.DEFAULT;
 		var width  = w - margin.left - margin.right;
 		var height = h - margin.top - margin.bottom;
 		var svg = svg.append("g")
@@ -1580,12 +1418,21 @@ function App(){
 }
 
 App.appId = "";
-App.KEY_APP_ID = "estat-appid";
+App.KEY_APP_ID = STORAGE_KEYS.APP_ID;
 App.loadAppId = function(){
 	try{
 		App.appId = window.localStorage.getItem(App.KEY_APP_ID) || "";
 	}catch(e){
-		App.appId = document.cookie.replace('appId=','')
+		console.warn('localStorage not available, using cookies:', e);
+		var cookies = document.cookie.split(';');
+		for(var i = 0; i < cookies.length; i++){
+			var cookie = cookies[i].trim();
+			if(cookie.indexOf('appId=') === 0){
+				App.appId = cookie.substring(6);
+				return;
+			}
+		}
+		App.appId = '';
 	}
 };
 App.saveAppId = function(appId){
@@ -1593,7 +1440,8 @@ App.saveAppId = function(appId){
 	try{
 		window.localStorage.setItem(App.KEY_APP_ID, appId);
 	}catch(e){
-		document.cookie= 'appId='+appId
+		console.warn('localStorage not available, using cookies:', e);
+		document.cookie = 'appId=' + appId + '; path=' + COOKIE_CONFIG.PATH + '; max-age=' + COOKIE_CONFIG.MAX_AGE;
 	}
 };
 
@@ -1685,10 +1533,13 @@ initialization.data_load = function(){
 	var app = new App();
 	app.loadAppId();
 	var appId = app._appId == '' ? prompt('AppIdを入力してください') : app._appId;
-	try{
-		window.localStorage.setItem(App.KEY_APP_ID, appId);
-	}catch(e){
-		document.cookie= 'appId='+appId
+	if(appId){
+		try{
+			window.localStorage.setItem(App.KEY_APP_ID, appId);
+		}catch(e){
+			console.warn('localStorage not available, using cookies:', e);
+			document.cookie = 'appId=' + appId + '; path=' + COOKIE_CONFIG.PATH + '; max-age=' + COOKIE_CONFIG.MAX_AGE;
+		}
 	}
 	// appId 
 	window.app_data = [];
@@ -1763,7 +1614,8 @@ initialization.data_load = function(){
 			},100)
 			_userData = userData
 		}catch(e){
-			alert('このブラウザはローカルで使用できない機能があります。')
+			console.warn('localStorage error:', e);
+			showError('このブラウザはローカルストレージが使用できません。ファイルアップロード機能は制限されます。');
 		}
 	}
 	loading()
