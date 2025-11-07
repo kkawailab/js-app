@@ -211,58 +211,13 @@ Hard-coded in `index.html` as `pref_points` object with lat/long coordinates for
 
 ## Recent Improvements
 
-### December 2024 - UI/UX Modernization
+For detailed changelog, see the [Git commit history](https://github.com/kkawailab/js-app/commits/master).
 
-**Modern Design System**:
-- Implemented CSS variables (design tokens) for consistent theming
-- Modern color palette with Indigo primary and Cyan secondary colors
-- 4-tier shadow system for depth and hierarchy
-- Smooth animations with cubic-bezier easing functions
+### Key Updates
 
-**Fully Responsive Design**:
-- Mobile-first approach with 3 breakpoints (1024px/768px/480px)
-- Adaptive layout: desktop (sidebar + main), mobile (stacked vertical)
-- Touch-friendly interface elements (larger touch targets)
-- Optimized viewport and scaling for all devices
-
-**Enhanced UI Components**:
-- Gradient header with modern visual appeal
-- Card-based layout with hover effects (elevation/lift)
-- Micro-interactions on buttons and interactive elements
-- Improved modals with backdrop blur effect
-- Custom scrollbars for better aesthetics
-- Loading and error states with smooth animations
-
-**Accessibility Improvements**:
-- Added viewport meta tag for proper mobile scaling
-- Semantic HTML with `lang="ja"` attribute
-- Print-friendly styles
-- Better keyboard navigation support
-
-### November 2024 - Code Quality & Architecture
-
-**Security Enhancements**:
-- All HTTP URLs changed to HTTPS
-- Secure communication for API calls and CDN resources
-
-**Modularization**:
-- Split main.js into logical modules:
-  - `js/core/constants.js` - Centralized configuration
-  - `js/core/utils.js` - Utility functions
-  - `js/core/eventer.js` - Event system
-  - `js/api/estatAPI.js` - API wrapper
-- Improved code organization and maintainability
-
-**Code Quality**:
-- Removed `throw false;` bug from chart rendering
-- Extracted magic numbers to named constants
-- Improved cookie parsing to handle multiple cookies
-- Added comprehensive error handling with user feedback
-
-**Documentation**:
-- Created CLAUDE.md for developer guidance
-- Completely rewrote README.md with modern structure
-- Added inline code comments
+- **December 2024**: UI/UX Modernization (responsive design, modern design system, accessibility)
+- **November 2024**: Code Quality & Architecture (refactoring, modularization, security enhancements)
+- **March 2016**: Initial Release (basic functionality)
 
 ## Known Limitations
 
