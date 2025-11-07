@@ -209,20 +209,60 @@ Hard-coded in `index.html` as `pref_points` object with lat/long coordinates for
 - Cookies used if localStorage unavailable
 - IE11 requires web server for file operations
 
-## Recent Improvements (Refactoring)
+## Recent Improvements
 
-The codebase has been refactored with the following improvements:
+### December 2024 - UI/UX Modernization
 
-1. **Security fixes**: All HTTP URLs changed to HTTPS
-2. **Bug fixes**: Removed `throw false;` from chart rendering
-3. **Error handling**: Added user-facing error messages with visual feedback
-4. **Modularization**: Split main.js into logical modules:
-   - `js/core/constants.js` - Centralized configuration
-   - `js/core/utils.js` - Utility functions
-   - `js/core/eventer.js` - Event system
-   - `js/api/estatAPI.js` - API wrapper
-5. **Constants extraction**: Magic numbers replaced with named constants
-6. **Cookie handling**: Improved cookie parsing to handle multiple cookies correctly
+**Modern Design System**:
+- Implemented CSS variables (design tokens) for consistent theming
+- Modern color palette with Indigo primary and Cyan secondary colors
+- 4-tier shadow system for depth and hierarchy
+- Smooth animations with cubic-bezier easing functions
+
+**Fully Responsive Design**:
+- Mobile-first approach with 3 breakpoints (1024px/768px/480px)
+- Adaptive layout: desktop (sidebar + main), mobile (stacked vertical)
+- Touch-friendly interface elements (larger touch targets)
+- Optimized viewport and scaling for all devices
+
+**Enhanced UI Components**:
+- Gradient header with modern visual appeal
+- Card-based layout with hover effects (elevation/lift)
+- Micro-interactions on buttons and interactive elements
+- Improved modals with backdrop blur effect
+- Custom scrollbars for better aesthetics
+- Loading and error states with smooth animations
+
+**Accessibility Improvements**:
+- Added viewport meta tag for proper mobile scaling
+- Semantic HTML with `lang="ja"` attribute
+- Print-friendly styles
+- Better keyboard navigation support
+
+### November 2024 - Code Quality & Architecture
+
+**Security Enhancements**:
+- All HTTP URLs changed to HTTPS
+- Secure communication for API calls and CDN resources
+
+**Modularization**:
+- Split main.js into logical modules:
+  - `js/core/constants.js` - Centralized configuration
+  - `js/core/utils.js` - Utility functions
+  - `js/core/eventer.js` - Event system
+  - `js/api/estatAPI.js` - API wrapper
+- Improved code organization and maintainability
+
+**Code Quality**:
+- Removed `throw false;` bug from chart rendering
+- Extracted magic numbers to named constants
+- Improved cookie parsing to handle multiple cookies
+- Added comprehensive error handling with user feedback
+
+**Documentation**:
+- Created CLAUDE.md for developer guidance
+- Completely rewrote README.md with modern structure
+- Added inline code comments
 
 ## Known Limitations
 
